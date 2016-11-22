@@ -31,15 +31,15 @@ openshift_master_cluster_public_hostname=openshift-cluster.example.com
 
 # host group for masters
 [masters]
-master1.example.com
-master2.example.com
-master3.example.com
+$MASTER1
+$MASTER2
+$MASTER3
 
 # host group for etcd
 [etcd]
-master1.example.com
-master2.example.com
-master3.example.com
+$MASTER1
+$MASTER2
+$MASTER3
 
 # Specify load balancer host
 [lb]
