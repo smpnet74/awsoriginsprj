@@ -1,0 +1,26 @@
+#!/bin/bash
+set -x
+exec > >(tee /var/log/user-data.log|logger -t user-data ) 2>&1
+echo BEGIN
+date '+%Y-%m-%d %H:%M:%S'
+yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+yum -y install python-pip iptables
+dnf install -y pyOpenSSL python-cryptography python-lxml iptables-services wget git bind-utils docker 
+dnf install -y python-dbus yum-utils python2-dnf firewalld python2-firewall
+pip install --upgrade pip
+pip install awscli
+#sed -i -e "s/^enabled=1/enabled=0/" /etc/yum.repos.d/epel.repo
+cd ~
+git clone https://github.com/openshift/openshift-ansible
+cd openshift-ansible
+sed -i '/OPTIONS=.*/c\OPTIONS="--selinux-enabled --insecure-registry 172.30.0.0/16"' /etc/sysconfig/docker
+cat <<EOF > /etc/sysconfig/docker-storage-setup
+DEVS=/dev/xvdg
+VG=docker-vg
+EOF
+docker-storage-setup
+systemctl enable docker
+systemctl start docker
+sleep 2m
+aws s3 cp s3://openshifts3bucket/id_rsa.pub ~/.ssh/id_rsa.pub
+cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
